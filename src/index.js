@@ -7,6 +7,12 @@ const floors = document.querySelectorAll('.floorType')
 const roomDrop = document.getElementById("roomDropDown");
 const dropZone = document.querySelector('.dropzone')
 
+const resetRoom = document.getElementById("resetGrid");
+
+function resetButtonListener (){
+  resetRoom.addEventListener("click", ()=>cleanRoom())
+}
+
 function roomSelectListener(){
   roomDrop.addEventListener("click", e=> {
     currentFloor.innerHTML = '';
@@ -19,12 +25,24 @@ function roomSelectListener(){
   });
 }
 
+
+
 function displayRoom(room){
   dropZone.innerHTML = `<h4 contenteditable>${room.name}</h4>
-                        <div id="dropArea" style= "background-image: ${room.img_background};"></div>
+                        <div id="dropArea" style= "background-image: url(${room.img_background});"></div>
                           <div class="gridBtns">
                         <button id="resetGrid">Reset</button>
                         <button id="submitGrid">Save Changes</button>
+                        </div>`
+}
+
+function cleanRoom (){
+  dropZone.innerHTML = `<h4 contenteditable>My Room</h4>
+                        <div id="dropArea" ></div>
+                          <div class="gridBtns">
+                              <button id="resetGrid">Reset</button>
+                            <button id="submitGrid">Save your Room</button>
+                          </div>
                         </div>`
 }
 
@@ -37,13 +55,10 @@ function displayFurnitures(furnitureList){
   }
 }
 
-
 floors.forEach(floor => {
   floor.addEventListener("click", (e) => {
-    debugger
-    let changeFloor = e.target.src
-    currentFloor.style.backgroundImage = changeFloor;
-    debugger
+    let changeFloor = e.target.src.split('/').slice(-2).join('/')
+    currentFloor.style.backgroundImage = `url(${changeFloor})`;
     })
 });
 
@@ -75,7 +90,7 @@ function collectRoomButton(){
 }
 
 function postRoom(room, furniture){
-  roomObj = {name: room[1],img_background: room[0]}
+  roomObj = {name: room[1],img_background: room[0].slice(5, -2)}
 
   return fetch('http://localhost:3000/api/v1/rooms',{
     method:'Post',
@@ -95,8 +110,7 @@ function postEachFurniture(newRoom, respID){
       furn.room_id = respID
       postRoomFurniture(furn);  
   }
-    currentFloor.innerHTML = '';
-    document.querySelector('h4').innerText = 'My Room';
+    cleanRoom();
 }
 
 function postRoomFurniture(furniture){
@@ -106,14 +120,6 @@ function postRoomFurniture(furniture){
     body: JSON.stringify(furniture)
   })
 }
-
-
-
-
-
-
-
-
 
 
 function initialize(){
@@ -128,11 +134,8 @@ function initialize(){
 
   roomSelectListener()
   collectRoomButton()
+  resetButtonListener()
 }
-
-
-
-
 
 function getFurnitures(){
   return fetch('http://localhost:3000/api/v1/furnitures').then(resp => resp.json());
@@ -150,12 +153,6 @@ function getRooms(){
 function getSpecificRoom(roomID){
   return fetch(`http://localhost:3000/api/v1/rooms/${roomID}`).then(resp => resp.json());
  }
-
-
-
-
-
-
 
 
 initialize()
